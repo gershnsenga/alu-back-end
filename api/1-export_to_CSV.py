@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-#!/usr/bin/envpython3
 """
 Employee TODO Progress Module with CSV Export
 
@@ -65,7 +64,6 @@ def get_employee_todo_progress(employee_id):
     csv_filename = f"{employee_id}.csv"
     with open(csv_filename, mode='w') as csv_file:
         csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
-        
         for todo in todos:
             csv_writer.writerow([
                 employee_id,
