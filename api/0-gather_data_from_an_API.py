@@ -1,9 +1,41 @@
 #!/usr/bin/python3
 
+"""
+Employee TODO Progress Module
+
+This module provides functionality to fetch and display an employee's TODO list progress
+using a REST API. It retrieves employee information and their associated tasks, then
+calculates and presents the progress in a specified format.
+
+The module uses the JSONPlaceholder API (https://jsonplaceholder.typicode.com) for demonstration purposes.
+
+Usage:
+    python todo_progress.py <employee_id>
+
+Dependencies:
+    - requests library (install via pip install requests)
+"""
+
 import requests
 import sys
 
 def get_employee_todo_progress(employee_id):
+    """
+    Fetch and display an employee's TODO list progress.
+
+    This function retrieves employee information and their TODO list from the API,
+    calculates the progress, and displays it in the specified format.
+
+    Args:
+        employee_id (int): The ID of the employee to fetch information for.
+
+    Returns:
+        None. The function prints the results to stdout.
+
+    Raises:
+        No exceptions are raised directly, but error messages are printed to stdout
+        if API requests fail or if the employee ID is invalid.
+    """
     # Base URL for the API
     base_url = "https://jsonplaceholder.typicode.com"
 
@@ -35,8 +67,9 @@ def get_employee_todo_progress(employee_id):
             print(f"\t {todo['title']}")
 
 if __name__ == "__main__":
+    # Command-line argument parsing and error handling
     if len(sys.argv) != 2:
-        print("Usage: python 0-gather_data_from_an_API.py <employee_id>")
+        print("Usage: python todo_progress.py <employee_id>")
         sys.exit(1)
 
     try:
@@ -45,4 +78,5 @@ if __name__ == "__main__":
         print("Error: Employee ID must be an integer.")
         sys.exit(1)
 
+    # Call the main function
     get_employee_todo_progress(employee_id)
