@@ -64,7 +64,6 @@ def get_employee_todo_progress(employee_id):
     csv_filename = f"{employee_id}.csv"
     with open(csv_filename, mode='w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
-        
         for todo in todos:
             csv_writer.writerow([
                 employee_id,
