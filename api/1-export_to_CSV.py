@@ -1,56 +1,91 @@
 #!/usr/bin/python3
 """
-Module to fetch user information and export TODO list to a CSV file
+Employee TODO Progress Module with CSV Export
+
+This module fetches an employee's TODO list progress using a REST API and
+exports the data to a CSV file. It retrieves employee information and their
+associated tasks, then saves the data in the specified format.
+
+The module uses the JSONPlaceholder API (https://jsonplaceholder.typicode.com)
+for demonstration purposes.
+
+Usage:
+    python todo_progress_csv.py <employee_id>
+
+Dependencies:
+    - requests library (install via pip install requests)
 """
+
 import csv
 import requests
-from sys import argv
+import sys
 
 
-def get_employee_info(employee_id):
+def get_employee_todo_progress(employee_id):
     """
-    Get employee information by employee ID
-    """
-    url = f'https://jsonplaceholder.typicode.com/users/{employee_id}'
-    response = requests.get(url)
-    return response.json()
+    Fetch an employee's TODO list progress and export to CSV.
 
+    This function retrieves employee information and their TODO list from the
+    API, then exports the data to a CSV file.
 
-def get_employee_todos(employee_id):
-    """
-    Get the TODO list of the employee by employee ID
-    """
-    url = f'https://jsonplaceholder.typicode.com/users/{employee_id}/todos'
-    response = requests.get(url)
-    return response.json()
+    Args:
+        employee_id (int): The ID of the employee to fetch information for.
 
+    Returns:
+        None. The function exports data to a CSV file.
 
-def export_to_csv(employee_id, username, todos):
+    Raises:
+        No exceptions are raised directly, but error messages are printed to
+        stdout if API requests fail or if the employee ID is invalid.
     """
-    Export TODO list to a CSV file
-    """
-    filename = f'{employee_id}.csv'
-    with open(filename, mode='w') as file:
-        file_writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
+    # Base URL for the API
+    base_url = "https://jsonplaceholder.typicode.com"
+
+    # Get employee information
+    employee_response = requests.get(f"{base_url}/users/{employee_id}")
+    if employee_response.status_code != 200:
+        print(f"Error: Unable to fetch employee data. "
+              f"Status code: {employee_response.status_code}")
+        return
+
+    employee_data = employee_response.json()
+    username = employee_data['username']
+
+    # Get TODO list for the employee
+    todos_response = requests.get(f"{base_url}/todos?userId={employee_id}")
+    if todos_response.status_code != 200:
+        print(f"Error: Unable to fetch TODO list. "
+              f"Status code: {todos_response.status_code}")
+        return
+
+    todos = todos_response.json()
+
+    # Export data to CSV
+    csv_filename = f"{employee_id}.csv"
+    with open(csv_filename, mode='w') as file:
+        csv_writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
         for todo in todos:
-            rowData = [employee_id, username, todo['completed'], todo['title']]
-            file_writer.writerow(rowData)
+            csv_writer.writerow([
+                employee_id,
+                username,
+                str(todo['completed']),
+                todo['title']
+            ])
 
-
-def main(employee_id):
-    """
-    Main function to fetch user info and TODO list, then export to CSV
-    """
-    user = get_employee_info(employee_id)
-    username = user.get("username")
-
-    todos = get_employee_todos(employee_id)
-
-    export_to_csv(employee_id, username, todos)
+    print(f"Data exported to {csv_filename}")
 
 
 if __name__ == "__main__":
-    if len(argv) > 1:
-        main(argv[1])
-    else:
-        print("Usage: ./1-export_to_CSV.py <employee_id>")
+    # Command-line argument parsing and error handling
+    if len(sys.argv) != 2:
+        print("Usage: python todo_progress_csv.py <employee_id>")
+        sys.exit(1)
+
+    try:
+        employee_id = int(sys.argv[1])
+    except ValueError:
+        print("Error: Employee ID must be an integer.")
+        sys.exit(1)
+
+    # Call the main function
+    get_employee_todo_progress(employee_id)
