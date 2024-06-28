@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#!/usr/bin/envpython3
 """
 Employee TODO Progress Module with CSV Export
 
@@ -62,8 +63,9 @@ def get_employee_todo_progress(employee_id):
 
     # Export data to CSV
     csv_filename = f"{employee_id}.csv"
-    with open(csv_filename, mode='w', newline='') as csv_file:
+    with open(csv_filename, mode='w') as csv_file:
         csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
+        
         for todo in todos:
             csv_writer.writerow([
                 employee_id,
@@ -78,7 +80,7 @@ def get_employee_todo_progress(employee_id):
 if __name__ == "__main__":
     # Command-line argument parsing and error handling
     if len(sys.argv) != 2:
-        print("Usage: python todo_progress_csv.py <employee_id>")
+        print("Usage: python export_data_csv.py <employee_id>")
         sys.exit(1)
 
     try:
