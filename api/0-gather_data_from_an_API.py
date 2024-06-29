@@ -1,88 +1,52 @@
 #!/usr/bin/python3
 """
-Employee TODO Progress Module
-
-This module provides functionality to fetch and display an employee's TODO list
-progress using a REST API. It retrieves employee information and their
-associated tasks, then calculates and presents the progress in a specified
-format.
-
-The module uses the JSONPlaceholder API (https://jsonplaceholder.typicode.com)
-for demonstration purposes.
-
-Usage:
-    python todo_progress.py <employee_id>
-
-Dependencies:
-    - requests library (install via pip install requests)
+Python script that returns TODO list progress for a given employee ID
 """
-
 import requests
-import sys
+from sys import argv
 
 
-def get_employee_todo_progress(employee_id):
+def get_employee_info(employee_id):
     """
-    Fetch and display an employee's TODO list progress.
-
-    This function retrieves employee information and their TODO list from the
-    API, calculates the progress, and displays it in the specified format.
-
-    Args:
-        employee_id (int): The ID of the employee to fetch information for.
-
-    Returns:
-        None. The function prints the results to stdout.
-
-    Raises:
-        No exceptions are raised directly, but error messages are printed to
-        stdout if API requests fail or if the employee ID is invalid.
+    Get employee information by employee ID
     """
-    # Base URL for the API
-    base_url = "https://jsonplaceholder.typicode.com"
+    url = f'https://jsonplaceholder.typicode.com/users/{employee_id}/'
+    response = requests.get(url)
+    return response.json()
 
-    # Get employee information
-    employee_response = requests.get(f"{base_url}/users/{employee_id}")
-    if employee_response.status_code != 200:
-        print(f"Error: Unable to fetch employee data. "
-              f"Status code: {employee_response.status_code}")
-        return
 
-    employee_data = employee_response.json()
-    employee_name = employee_data['name']
+def get_employee_todos(employee_id):
+    """
+    Get the TODO list of the employee by employee ID
+    """
+    url = f'https://jsonplaceholder.typicode.com/users/{employee_id}/todos'
+    response = requests.get(url)
+    return response.json()
 
-    # Get TODO list for the employee
-    todos_response = requests.get(f"{base_url}/todos?userId={employee_id}")
-    if todos_response.status_code != 200:
-        print(f"Error: Unable to fetch TODO list. "
-              f"Status code: {todos_response.status_code}")
-        return
 
-    todos = todos_response.json()
-    total_tasks = len(todos)
-    completed_tasks = sum(1 for todo in todos if todo['completed'])
+def main(employee_id):
+    """
+    Main function to fetch and display the TODO list progress of the employee
+    """
+    employee = get_employee_info(employee_id)
+    employee_name = employee.get("name")
 
-    # Display the progress
+    emp_todos = get_employee_todos(employee_id)
+    tasks = {todo.get("title"): todo.get("completed") for todo in emp_todos}
+
+    total_tasks = len(tasks)
+    completed_tasks = [completed for completed in tasks.values() if completed]
+    completed_tasks_count = len(completed_tasks)
+
     print(f"Employee {employee_name} is done with tasks"
-          f"({completed_tasks}/{total_tasks}):")
-
-    # Display completed tasks
-    for todo in todos:
-        if todo['completed']:
-            print(f"\t {todo['title']}")
+          f"({completed_tasks_count}/{total_tasks}):")
+    for title, completed in tasks.items():
+        if completed:
+            print(f"\t {title}")
 
 
 if __name__ == "__main__":
-    # Command-line argument parsing and error handling
-    if len(sys.argv) != 2:
-        print("Usage: python 0-gather_data_from_an_API.py <employee_id>")
-        sys.exit(1)
-
-    try:
-        employee_id = int(sys.argv[1])
-    except ValueError:
-        print("Error: Employee ID must be an integer.")
-        sys.exit(1)
-
-    # Call the main function
-    get_employee_todo_progress(employee_id)
+    if len(argv) > 1:
+        main(argv[1])
+    else:
+        print("Usage: ./0-gather_data_from_an_API.py <employee_id>")
