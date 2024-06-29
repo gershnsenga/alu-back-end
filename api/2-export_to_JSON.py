@@ -1,96 +1,60 @@
 #!/usr/bin/python3
 """
-Employee TODO Progress Module with JSON Export
-
-This module fetches an employee's TODO list progress using a REST API and
-exports the data to a JSON file. It retrieves employee information and their
-associated tasks, then saves the data in the specified format.
-
-The module uses the JSONPlaceholder API (https://jsonplaceholder.typicode.com)
-for demonstration purposes.
-
-Usage:
-    python todo_progress_json.py <employee_id>
-
-Dependencies:
-    - requests library (install via pip install requests)
+Module to fetch user information and export TODO list to a JSON file
 """
-
 import json
 import requests
 import sys
 
 
-def get_employee_todo_progress(employee_id):
+def get_employee_info(employee_id):
     """
-    Fetch an employee's TODO list progress and export to JSON.
-
-    This function retrieves employee information and their TODO list from the
-    API, then exports the data to a JSON file.
-
-    Args:
-        employee_id (int): The ID of the employee to fetch information for.
-
-    Returns:
-        None. The function exports data to a JSON file.
-
-    Raises:
-        No exceptions are raised directly, but error messages are printed to
-        stdout if API requests fail or if the employee ID is invalid.
+    Get employee information by employee ID
     """
-    # Base URL for the API
-    base_url = "https://jsonplaceholder.typicode.com"
+    url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
+    response = requests.get(url)
+    return response.json()
 
-    # Get employee information
-    employee_response = requests.get(f"{base_url}/users/{employee_id}")
-    if employee_response.status_code != 200:
-        print(f"Error: Unable to fetch employee data. "
-              f"Status code: {employee_response.status_code}")
-        return
 
-    employee_data = employee_response.json()
-    username = employee_data['username']
+def get_employee_todos(employee_id):
+    """
+    Get the TODO list of the employee by employee ID
+    """
+    url = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
+    response = requests.get(url)
+    return response.json()
 
-    # Get TODO list for the employee
-    todos_response = requests.get(f"{base_url}/todos?userId={employee_id}")
-    if todos_response.status_code != 200:
-        print(f"Error: Unable to fetch TODO list. "
-              f"Status code: {todos_response.status_code}")
-        return
 
-    todos = todos_response.json()
+def export_to_json(employee_id, todos):
+    """
+    Export TODO list to a JSON file
+    """
+    filename = f"{employee_id}.json"
+    with open(filename, "w") as file:
+        json.dump({employee_id: todos}, file)
 
-    # Prepare data for JSON export
-    json_data = {
-        str(employee_id): [
-            {
-                "task": todo['title'],
-                "completed": todo['completed'],
-                "username": username
-            }
-            for todo in todos
-        ]
-    }
 
-    # Export data to JSON
-    json_filename = f"{employee_id}.json"
-    with open(json_filename, 'w') as json_file:
-        json.dump(json_data, json_file)
+def main(employee_id):
+    """
+    Main function to fetch user info and TODO list, then export to JSON
+    """
+    user_info = get_employee_info(employee_id)
+    todos_info = get_employee_todos(employee_id)
 
-    print(f"Data exported to {json_filename}")
+    employee_username = user_info["username"]
 
+    todos_info_sorted = [
+        {
+            "task": task["title"],
+            "completed": task["completed"],
+            "username": employee_username
+        } for task in todos_info
+    ]
+
+    export_to_json(employee_id, todos_info_sorted)
 
 if __name__ == "__main__":
-    # Command-line argument parsing and error handling
-    if len(sys.argv) != 2:
-        print("Usage: python todo_progress_json.py <employee_id>")
-        sys.exit(1)
-
-    try:
-        employee_id = int(sys.argv[1])
-    except ValueError:
-        print("Error: Employee ID must be an integer.")
-        sys.exit(1)
-
-    # Call the main function
-    get_employee_todo_progress(employee_id)
+    if len(sys.argv) > 1:
+        main(sys.argv[1])
+    else:
+        print("Usage: ./2-export_to_JSON.py <employee_id>")
